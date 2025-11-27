@@ -1,0 +1,17 @@
+.van-theme-dark {
+  // 自定义
+  --common-bg-nav: #010101;
+  --common-bg-main: #010101;
+  --common-bg-card: #404040;
+  --common-title-text-color: #e6e3e5;
+  --common-text-color: #e6e3e5;
+  --common-icon-unselect-bg: #535353;
+
+  --van-tabs-nav-background: var(--common-bg-card);
+  --van-nav-bar-title-text-color: var(--common-title-text-color);
+  --van-count-down-text-color: var(--common-text-color);
+  --van-popup-background: var(--common-bg-card);
+  --van-dialog-background: var(--common-bg-card);
+  --van-field-input-text-color: var(--common-text-color);
+  --van-button-default-background: var(--common-bg-card);
+}

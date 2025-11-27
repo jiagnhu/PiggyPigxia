@@ -1,0 +1,64 @@
+.van-dialog__header {
+  color: var(--common-title-text-color);
+}
+.van-field {
+  background-color: var(--common-bg-card);
+}
+.van-picker__title {
+  color: var(--common-title-text-color);
+}
+.van-stepper {
+  .van-stepper__input {
+    color: #000000;
+  }
+}
+.van-tab--active {
+  font-weight: normal;
+}
+.van-cell {
+  height: 48px;
+  align-items: center;
+  padding: 0 24px;
+  font-size: 16px;
+}
+
+.van-cell-group {
+  & + & {
+    margin-top: 8px;
+  }
+  .van-cell {
+    height: 48px;
+    align-items: center;
+    padding: 0 24px;
+    font-size: 16px;
+  }
+  .van-swipe-cell {
+    height: 64px;
+    .van-cell {
+      height: 64px;
+    }
+    .operateCell {
+      background: var(--common-bg-main);
+      padding: 0 18.75px;
+      .btn {
+        width: 37.5px;
+        height: 37.5px;
+      }
+    }
+  }
+}
+
+.van-slider {
+  height: 2px;
+  :deep(.van-slider__button) {
+    width: 24px;
+    height: 24px;
+  }
+}
+
+.van-popup {
+  .van-radio-group {
+    max-height: var(--popup-max-height);
+    overflow: auto;
+  }
+}

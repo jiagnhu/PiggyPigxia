@@ -1,0 +1,223 @@
+@use "sass:color";
+
+$ide-img-height: 244px;
+
+@mixin border-radius {
+  border-radius: var(--cell-border__radius);
+}
+
+@mixin ide-img-rect {
+  height: $ide-img-height;
+  width: 100%;
+}
+
+.greyLayer {
+  opacity: 38%;
+  pointer-events: none;
+}
+
+.home-image {
+  @include ide-img-rect;
+  position: fixed;
+
+  &-van {
+    @include ide-img-rect;
+  }
+}
+
+.home-content {
+  position: absolute;
+  top: $ide-img-height;
+  left: 0;
+  right: 0;
+  backdrop-filter: blur(12px);
+}
+
+// 行样式
+.van-row {
+  margin: 0 12px;
+  height: 64px;
+  @include border-radius;
+  background-color: var(--common-bg-card);
+  align-items: center;
+  padding: 0 12px;
+}
+
+// 开关状态
+.switchRow {
+  height: 90px;
+  justify-content: space-between;
+  .infoCard {
+    display: flex;
+    align-items: center;
+    flex-direction: column;
+    font-weight: bold;
+    .van-count-down {
+      font-size: 26.25px;
+    }
+    span {
+      font-size: 15px;
+      margin-top: 7.5px;
+      color: #6b6b6b;
+    }
+  }
+}
+
+@media only screen and (min-width: 600px) {
+  .switchRow {
+    height: 90px;
+  }
+}
+
+// 分割区
+.split-line {
+  //background-color: var(--common-bg-main);
+  height: 12px;
+}
+
+// 加粗字体
+.boldTextClass {
+  color: var(--common-text-color);
+  font-size: 16px;
+  font-weight: 500;
+}
+// 正常字体
+.normalTextClass {
+  color: var(--common-text-color);
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.selectedTextClass {
+  font-weight: var(--van-font-bold);
+}
+
+// 自定义行
+.rowSelf {
+  //background-color: var(--common-bg-main);
+  background: none;
+  justify-content: space-between;
+  padding: 0;
+}
+
+// 自定义半行
+.halfRowSelf {
+  width: calc((100% - 12px) / 2);
+  padding: 0;
+  justify-content: space-between;
+}
+
+.noMargin {
+  margin: 0;
+}
+.marginTop {
+  margin-top: 2px;
+  span {
+    color: var(--common-text-color);
+  }
+}
+.font-w-300 {
+  font-weight: 400;
+}
+.marginLeft {
+  margin-left: 12px;
+}
+.marginRight {
+  margin-right: 12px;
+}
+
+// 行两端对齐
+.spaceBetween {
+  justify-content: space-between;
+}
+
+// 灯光模式
+.lightModePiece {
+  margin: 0 12px;
+  background-color: var(--common-bg-card);
+  @include border-radius;
+  .van-tabs--line {
+    :deep(.van-tabs__wrap) {
+      @include border-radius;
+      height: 90px;
+      .van-tabs__nav--line {
+        padding: 0;
+        .van-tab {
+          width: 28.6%;
+          .van-tab__text {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+          }
+          span {
+            margin-top: 4px;
+          }
+          .selectedTextClass {
+            color: #256fff;
+          }
+        }
+      }
+    }
+  }
+  .sliderBright {
+    width: 86%;
+  }
+}
+
+// 番茄钟信息弹框
+.tomatoPopupContent {
+  font-size: 15px;
+  margin: 7.5px 24px;
+}
+.tomatoPopupImg {
+  text-align: center;
+  padding: 0 24px;
+  img {
+    height: 90px;
+    width: 102.5px;
+  }
+}
+.tomatoPopupClass {
+  justify-content: space-between;
+  :deep(.van-stepper) {
+    button {
+      width: 22.5px !important;
+      height: 22.5px !important;
+      color: #000000;
+      border: 2px solid #000000;
+      background: #ffffff;
+    }
+    .van-stepper__input {
+      border-radius: 37.5px;
+      margin: 0 15px;
+      background-color: #f2f2f2;
+      height: 37.5px !important;
+      width: 75px;
+    }
+  }
+}
+
+// 色温选择弹框
+.colorTempText {
+  display: flex;
+  justify-content: space-between;
+  .rightText {
+    display: flex;
+    align-items: center;
+    .inputClass {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      background: #f2f2f2;
+      height: 36px;
+      width: 82px;
+      border-radius: 37.5px;
+      margin-right: 8px;
+    }
+  }
+}
+
+// 音量
+.sliderVolume {
+  width: 86%;
+}

@@ -1,0 +1,18 @@
+{
+  "extends": "@vue/tsconfig/tsconfig.node.json",
+  "include": [
+    "vite.config.*",
+    "vitest.config.*",
+    "cypress.config.*",
+    "vite-plugin/**/*"
+  ],
+  "compilerOptions": {
+    "composite": true,
+    "types": [
+      "node",
+      "unplugin-vue-define-options",
+      "@intlify/vite-plugin-vue-i18n/client",
+      "vite/client"
+    ]
+  }
+}

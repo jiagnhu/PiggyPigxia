@@ -1,0 +1,8 @@
+.cs-dialog__message--has-title {
+  padding: var(--van-dialog-has-title-message-padding-top)
+    var(--van-dialog-message-padding);
+}
+
+.cs-dialog__message {
+  font-size: var(--van-font-size-lg) !important;
+}

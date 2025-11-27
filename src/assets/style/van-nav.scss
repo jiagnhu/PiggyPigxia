@@ -1,0 +1,29 @@
+.van-nav-bar {
+  height: 56px;
+  background: none;
+}
+
+.van-nav-bar__content {
+  height: 100% !important;
+  background: none;
+
+  .van-nav-bar__left {
+    width: 56px;
+    margin-left: 12px;
+    padding: 0 12px;
+  }
+  .van-nav-bar__title {
+    line-height: 56px;
+    font-size: 20px;
+    font-weight: bold;
+    margin-left: 64px;
+  }
+  .van-nav-bar__right {
+    width: 28.5px;
+    margin-right: 12px;
+    .van-image {
+      width: 12px;
+      height: 24px;
+    }
+  }
+}
