@@ -38,6 +38,8 @@ export const useStore = defineStore("main", {
     power: 0, // 1-开，0-关
     // 是否离线
     offline: false,
+    // 电量
+    battery: 0,
     // 当前灯光模式
     currentMode: -1,
     lightMode: -1,
@@ -140,13 +142,19 @@ export const useStore = defineStore("main", {
     },
 
     async getSomeServices() {
-      const res = await getDeviceServices({
-        switch: ["on"],
-        cct: ["colorTemperature"],
-        AIToy: ["volume"],
-      });
-      console.log("getSomeServices --> ", res);
-      // TODO something
+      try {
+        const res = await getDeviceServices({
+          switch: ["on"],
+          cct: ["colorTemperature"],
+          AIToy: ["volume"],
+        });
+        if (isReqSuccess(res?.status)) {
+          this.updateStoreData(res.serviceList);
+          dealServiceData(res.serviceList);
+        }
+      } catch (e) {
+        console.error(e);
+      }
     },
 
     // 更新状态

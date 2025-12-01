@@ -1,4 +1,6 @@
 {
   "cctRange": "An integer ranging from 2000 to 6500",
-  "cycles": "cycles"
+  "cycles": "cycles",
+  "personalInfo": "Personal Info",
+  "hardwareDevice": "Hardware Device"
 }

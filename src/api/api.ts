@@ -51,7 +51,7 @@ export const setLightMode = (value: number) =>
 // 设置台灯亮度
 export const setBrightness = (value: number) =>
   setDevicePropertyCurry(StoreMapProfileKey.brightness, value);
-
+// 设置音量
 export const setVolume = (value: number) =>
   setDevicePropertyCurry(StoreMapProfileKey.volume, value);
 

@@ -1,6 +1,8 @@
 <script setup lang="ts">
-import { computed } from "vue";
+import { computed, onMounted } from "vue";
 import { serviceList } from "@/pages/service";
+import { useStore } from "@/pages/store";
+import { useI18n } from "vue-i18n";
 
 const device = computed(() => {
   const { deviceInfo, baseInfo, ota } = serviceList.value;
@@ -13,33 +15,40 @@ const device = computed(() => {
     upgrade: ota?.version?.value || "SDK.365.1",
   };
 });
+
+const store = useStore();
+const { t } = useI18n();
+onMounted(() => {
+  // 拉取设备信息，填充硬件页数据
+  store.getDevInfoAll();
+});
 </script>
 
 <template>
   <div class="hardware">
     <section class="info-card">
       <div class="info-row">
-        <span class="info-row__label">厂商信息</span>
+        <span class="info-row__label">{{ t("manufacturer") }}</span>
         <span class="info-row__value">{{ device.manufacturer }}</span>
       </div>
       <div class="info-row">
-        <span class="info-row__label">设备型号</span>
+        <span class="info-row__label">{{ t("deviceModel") }}</span>
         <span class="info-row__value">{{ device.model }}</span>
       </div>
       <div class="info-row">
-        <span class="info-row__label">序列号</span>
+        <span class="info-row__label">{{ t("serialNumber") }}</span>
         <span class="info-row__value">{{ device.sn }}</span>
       </div>
       <div class="info-row">
-        <span class="info-row__label">固件版本</span>
+        <span class="info-row__label">{{ t("firmwareVersion") }}</span>
         <span class="info-row__value">{{ device.firmware }}</span>
       </div>
       <div class="info-row">
-        <span class="info-row__label">硬件版本</span>
+        <span class="info-row__label">{{ t("hardwareVersion") }}</span>
         <span class="info-row__value">{{ device.hardware }}</span>
       </div>
       <div class="info-row last">
-        <span class="info-row__label">固件升级</span>
+        <span class="info-row__label">{{ t("firmwareUpgrade") }}</span>
         <span class="info-row__value">{{ device.upgrade }}</span>
       </div>
     </section>

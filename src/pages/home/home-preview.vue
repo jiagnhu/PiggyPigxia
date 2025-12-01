@@ -1,13 +1,14 @@
 <script setup lang="ts">
-import { computed, ref } from "vue";
+import { computed, ref, onMounted } from "vue";
 import { useRouter } from "vue-router";
+import { useStore } from "@/pages/store";
+import { storeToRefs } from "pinia";
+import { useI18n } from "vue-i18n";
+import { console } from "inspector";
 
-const deviceName = "猪猪侠 AI 毛绒";
+const { t } = useI18n();
+
 const connected = ref(true);
-const battery = ref(100);
-const volume = ref(50);
-
-const volumeText = computed(() => `${volume.value}%`);
 
 const router = useRouter();
 const goHardware = () => {
@@ -19,6 +20,19 @@ const goUser = () => {
 const goFirmware = () => {
   router.push("/firmware");
 };
+
+const store = useStore();
+const { volume, battery, offline } = storeToRefs(store);
+const volumeText = computed(() => `${volume.value}%`);
+const onVolumeChange = (val: number) => {
+  volume.value = val;
+  store.changeVolume();
+};
+
+onMounted(() => {
+  // 获取设备当前音量等部分属性，避免初始值为0
+  store.getSomeServices();
+});
 </script>
 
 <template>
@@ -26,14 +40,16 @@ const goFirmware = () => {
     <main class="content">
       <section class="hero">
         <img src="/images/piggy.png" alt="猪猪侠" class="hero__img" />
-        <p class="hero__brand">HONOR</p>
+        <div class="hero__brand">HONOR</div>
       </section>
 
       <section class="card status-card">
         <div class="status-row">
-          <div class="status-row__label">已连接</div>
+          <div class="status-row__label">
+            {{ offline ? t("disconnected") : t("connected") }}
+          </div>
           <div class="status-row__value">
-            <span class="status-row__battery">{{ battery }}%</span>
+            <div class="status-row__battery">{{ battery ?? 0 }}%</div>
             <van-icon name="bulb-o" size="18" color="#888" />
           </div>
         </div>
@@ -41,32 +57,25 @@ const goFirmware = () => {
 
       <section class="card slider-card">
         <div class="slider-card__header">
-          <span class="slider-card__label">音量</span>
+          <span class="slider-card__label">{{ t("volume") }}</span>
+          <div class="slider-card__footer">{{ volumeText }}</div>
         </div>
-        <van-slider
-          v-model="volume"
-          :min="0"
-          :max="100"
-          active-color="#2f7bff"
-          bar-height="8px"
-        />
-        <div class="slider-card__footer">{{ volumeText }}</div>
+        <van-slider v-model="volume" :min="0" :max="100" active-color="#256FFF" bar-height="6px"
+          @change="onVolumeChange" />
       </section>
 
       <section class="actions">
         <div class="actions__row">
           <div class="tile" @click="goUser">
-            <span>个人信息</span>
+            <span>{{ t("personalInfo") }}</span>
             <van-icon name="user-o" />
           </div>
           <div class="tile" @click="goHardware">
-            <span>硬件设备</span>
+            <span>{{ t("hardwareDevice") }}</span>
             <van-icon name="setting-o" />
           </div>
-        </div>
-        <div class="actions__row single">
           <div class="tile" @click="goFirmware">
-            <span>固件升级</span>
+            <span>{{ t("firmwareUpgrade") }}</span>
             <van-icon name="cloud-o" />
           </div>
         </div>
@@ -77,63 +86,66 @@ const goFirmware = () => {
 
 <style scoped lang="scss">
 .home-preview {
-  min-height: calc(100vh - 56px);
   background: var(--common-bg-main);
-  padding: 8px 12px 20px;
+  padding: 0 12px;
   box-sizing: border-box;
 }
 
 .content {
   display: flex;
   flex-direction: column;
-  gap: 14px;
+  gap: 12px;
 }
 
 .hero {
   display: flex;
   flex-direction: column;
   align-items: center;
-  margin-top: 6px;
+  height: 300px;
+  box-sizing: border-box;
+  padding-top: 22px;
 
   &__img {
-    width: 240px;
-    height: 240px;
+    width: 186px;
+    height: 208px;
     object-fit: contain;
+    padding-bottom: 44px;
   }
 
   &__brand {
-    margin: 8px 0 0;
     letter-spacing: 1px;
-    color: #9aa3ad;
+    color: #999999;
     font-weight: 600;
   }
 }
 
 .card {
   background: var(--common-bg-card);
-  border-radius: 18px;
-  box-shadow: 0 12px 26px rgba(0, 0, 0, 0.06);
+  border-radius: var(--common-br-ra);
 }
 
 .status-card {
-  padding: 16px 18px;
+  padding: 0 12px;
+  height: 90px;
+  box-sizing: border-box;
 
   .status-row {
+    height: 100%;
     display: flex;
     align-items: center;
     justify-content: space-between;
 
     &__label {
+      font-weight: 500;
       font-size: 16px;
       color: var(--common-text-color);
     }
 
     &__value {
+      color: var(--common-text-color);
       display: flex;
       align-items: center;
-      gap: 8px;
-      color: var(--common-text-color);
-      font-weight: 600;
+      flex-direction: column;
     }
 
     &__battery {
@@ -143,70 +155,74 @@ const goFirmware = () => {
 }
 
 .slider-card {
-  padding: 16px 18px 12px;
+  padding: 0 12px;
+  height: 64px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  box-sizing: border-box;
 
   &__header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 12px;
+    width: 80px;
   }
 
   &__label {
     font-size: 16px;
+    font-weight: 500;
     color: var(--common-text-color);
+  }
+
+  &__footer {
+    font-size: 16px;
+    color: rgba(0,0,0,0.6);
   }
 
   :deep(.van-slider) {
     align-items: center;
 
     .van-slider__button {
-      width: 24px;
-      height: 24px;
-      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.12);
+      width: 20px;
+      height: 20px;
+      box-shadow: 0px 1px 2px 0px rgba(0,0,0,0.05);
+      border: 1px solid rgba(0,0,0,0.1);
     }
-  }
-
-  &__footer {
-    margin-top: 8px;
-    color: #7a828a;
   }
 }
 
 .actions {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
+  width: 100%;
 
   &__row {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
     gap: 12px;
+    box-sizing: border-box;
 
-    &.single {
-      grid-template-columns: 1fr;
+    .tile {
+      flex: 0 0 calc((100% - 12px) / 2);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 12px;
+      background: #fff;
+      border-radius: var(--common-br-ra);
+      font-size: 16px;
+      color: var(--common-text-color);
+      font-weight: 500;
+      cursor: pointer;
+      box-sizing: border-box;
+      height: 64px;
+
+
+      &:active {
+        transform: scale(0.99);
+      }
+
+      :deep(.van-icon) {
+        color: #222;
+      }
     }
-  }
-}
-
-.tile {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 14px 16px;
-  background: #fff;
-  border-radius: 14px;
-  box-shadow: 0 8px 22px rgba(0, 0, 0, 0.06);
-  font-size: 16px;
-  color: #222;
-  cursor: pointer;
-
-  &:active {
-    transform: scale(0.99);
-  }
-
-  :deep(.van-icon) {
-    color: #222;
   }
 }
 </style>

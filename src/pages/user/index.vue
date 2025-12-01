@@ -1,9 +1,12 @@
 <script setup lang="ts">
 import { ref, nextTick } from "vue";
+import { useI18n } from "vue-i18n";
+
+const { t } = useI18n();
 
 const user = ref({
-  name: "昵称",
-  gender: "保密",
+  name: t("nickname"),
+  gender: t("secret"),
   birthday: "1999/10/22",
 });
 
@@ -12,7 +15,11 @@ const tempName = ref(user.value.name);
 
 const showGenderPopup = ref(false);
 const tempGender = ref(user.value.gender);
-const genderOptions = ["男", "女", "保密"];
+const genderOptions = [
+  { label: "male", text: t("male") },
+  { label: "female", text: t("female") },
+  { label: "secret", text: t("secret") },
+];
 
 const showBirthdayPopup = ref(false);
 const birthdayDate = ref(["1999", "10", "22"]);
@@ -71,11 +78,11 @@ const onConfirmBirthday = () => {
 
 <template>
   <div class="user-page">
-    <p class="section-title">通用设置</p>
+    <p class="section-title">{{ t("generalSettings") }}</p>
 
     <section class="card">
       <div class="row" @click="openNamePopup">
-        <span class="row__label">姓名</span>
+        <span class="row__label">{{ t("name") }}</span>
         <div class="row__value">
           <span>{{ user.name }}</span>
           <van-icon name="arrow" size="16" color="#b0b0b0" />
@@ -83,7 +90,7 @@ const onConfirmBirthday = () => {
       </div>
 
       <div class="row" @click="openGenderPopup">
-        <span class="row__label">性别</span>
+        <span class="row__label">{{ t("gender") }}</span>
         <div class="row__value">
           <span>{{ user.gender }}</span>
           <van-icon name="arrow" size="16" color="#b0b0b0" />
@@ -91,7 +98,7 @@ const onConfirmBirthday = () => {
       </div>
 
       <div class="row last" @click="openBirthdayPopup">
-        <span class="row__label">生日</span>
+        <span class="row__label">{{ t("birthday") }}</span>
         <div class="row__value">
           <span>{{ user.birthday }}</span>
           <van-icon name="arrow" size="16" color="#b0b0b0" />
@@ -101,18 +108,18 @@ const onConfirmBirthday = () => {
 
     <van-popup v-model:show="showNamePopup" round position="center">
       <div class="popup">
-        <div class="popup__title">姓名</div>
+        <div class="popup__title">{{ t("name") }}</div>
         <van-field
           v-model="tempName"
-          placeholder="昵称"
+          :placeholder="t('nickname')"
           border
           input-align="left"
           clearable
         />
         <div class="popup__actions">
-          <button class="popup__btn cancel" @click="onCancelName">取消</button>
+          <button class="popup__btn cancel" @click="onCancelName">{{ t("Cancel") }}</button>
           <span class="popup__divider" />
-          <button class="popup__btn confirm" @click="onConfirmName">确定</button>
+          <button class="popup__btn confirm" @click="onConfirmName">{{ t("Confirm") }}</button>
         </div>
       </div>
     </van-popup>
@@ -124,17 +131,18 @@ const onConfirmBirthday = () => {
       class="gender-popup-wrapper"
     >
       <div class="popup gender-popup">
-        <div class="popup__title">性别</div>
+        <div class="popup__title">{{ t("gender") }}</div>
         <div class="gender-list">
           <div
             v-for="item in genderOptions"
             :key="item"
             class="gender-item"
-            @click="tempGender = item"
+            @click="tempGender = item.text"
           >
-            <span class="gender-item__label">{{ item }}</span>
+            <span class="gender-item__label">{{ item.text }}</span>
             <van-radio
-              :name="item"
+              shape="dot"
+              :name="item.text"
               :model-value="tempGender"
               checked-color="#2f7bff"
             />
@@ -142,7 +150,7 @@ const onConfirmBirthday = () => {
         </div>
         <div class="popup__actions single">
           <button class="popup__btn cancel" @click="onCancelGender">
-            取消
+            {{ t("Cancel") }}
           </button>
         </div>
       </div>
@@ -155,7 +163,7 @@ const onConfirmBirthday = () => {
       class="birthday-popup-wrapper"
     >
       <div class="popup birthday-popup">
-        <div class="popup__title">生日</div>
+        <div class="popup__title">{{ t("birthday") }}</div>
         <van-date-picker
           v-model="birthdayDate"
           :min-date="minDate"
@@ -166,11 +174,11 @@ const onConfirmBirthday = () => {
         />
         <div class="popup__actions">
           <button class="popup__btn cancel" @click="showBirthdayPopup = false">
-            取消
+            {{ t("Cancel") }}
           </button>
           <span class="popup__divider" />
           <button class="popup__btn confirm" @click="onConfirmBirthday">
-            确定
+            {{ t("Confirm") }}
           </button>
         </div>
       </div>
@@ -180,7 +188,6 @@ const onConfirmBirthday = () => {
 
 <style scoped lang="scss">
 .user-page {
-  min-height: calc(100vh - 56px);
   background: var(--common-bg-main);
   padding: 12px 12px 24px;
   box-sizing: border-box;
@@ -355,5 +362,17 @@ const onConfirmBirthday = () => {
 :deep(.birthday-popup .van-picker__selected) {
   font-weight: 600;
   color: #2f7bff;
+}
+
+:deep(.birthday-popup .van-picker-column__item--selected) {
+  color: #2f7bff;
+  font-weight: 600;
+}
+
+:deep(.birthday-popup .van-picker__frame) {
+  border-radius: 14px;
+  border: 1px solid #e0e0e0;
+  left: 0;
+  right: 0;
 }
 </style>

@@ -1,4 +1,6 @@
 {
   "cctRange": "2000-6500之间的整数",
-  "cycles": "循环次数"
+  "cycles": "循环次数",
+  "personalInfo": "个人信息",
+  "hardwareDevice": "硬件设备"
 }

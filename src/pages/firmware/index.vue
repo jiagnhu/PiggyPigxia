@@ -1,7 +1,8 @@
 <script setup lang="ts">
-import { computed, ref, reactive, onBeforeUnmount } from "vue";
+import { computed, ref, reactive, onBeforeUnmount, onMounted } from "vue";
 import { serviceList } from "@/pages/service";
-import { console } from "inspector";
+import { getDeviceServices } from "@/api/api";
+import { useI18n } from "vue-i18n";
 
 const versions = computed(() => {
   const { ota, deviceInfo } = serviceList.value;
@@ -17,14 +18,17 @@ const versions = computed(() => {
 });
 
 const versionState = reactive({ ...versions.value });
-const hasNew = ref(versionState.hasNew);
+const hasNew = ref(false);
+const { t } = useI18n();
 
 const phase = ref<"list" | "detail" | "download" | "install" | "done">(
   "list"
 );
 const progress = ref(0);
+const progressText = computed(() => `${Math.round(progress.value)}%`);
 let timer: number | undefined;
 let checkTimer: number | undefined;
+let otaPollTimer: number | undefined;
 const checkStatus = ref<"idle" | "checking">("idle");
 
 const openDetail = () => {
@@ -36,6 +40,7 @@ const startDownload = () => {
   phase.value = "download";
   progress.value = 0;
   startProgress("download");
+  startOtaPolling();
 };
 
 const startInstall = () => {
@@ -56,7 +61,6 @@ const startProgress = (targetPhase: "download" | "install") => {
       }
       return;
     }
-    progress.value += 4;
   }, 400);
 };
 
@@ -67,14 +71,20 @@ const clearTimer = () => {
   }
 };
 
+const clearOtaPoll = () => {
+  if (otaPollTimer) {
+    clearInterval(otaPollTimer);
+    otaPollTimer = undefined;
+  }
+};
+
 const startCheck = () => {
   if (checkStatus.value === "checking") return;
   checkStatus.value = "checking";
   hasNew.value = false;
-  clearCheckTimer();
-  checkTimer = window.setTimeout(() => {
+  fetchOtaInfo().finally(() => {
     checkStatus.value = "idle";
-  }, 1500);
+  });
 };
 
 const clearCheckTimer = () => {
@@ -90,11 +100,87 @@ const finishAndBack = () => {
   phase.value = "list";
   progress.value = 0;
   checkStatus.value = "idle";
+  clearOtaPoll();
 };
 
 onBeforeUnmount(() => {
   clearTimer();
   clearCheckTimer();
+  clearOtaPoll();
+});
+
+const parseOtaFromServiceList = (list: any[]) => {
+  let status: number | undefined = undefined;
+  let prog: number | undefined = undefined;
+  let newVersion: string | undefined = undefined;
+  let intro: string | undefined = undefined;
+  let size: string | undefined = undefined;
+  let checkResult: number | undefined = undefined;
+
+  list?.forEach((service: any) => {
+    if (service?.id !== "ota") return;
+    service.propertyList?.forEach((p: any) => {
+      if (p.id === "otaStatus") status = Number(p.value);
+      if (p.id === "otaProgress") prog = Number(p.value);
+      if (p.id === "newVersion") newVersion = String(p.value || "");
+      if (p.id === "introduction") intro = String(p.value || "");
+      if (p.id === "size") size = String(p.value || "");
+      if (p.id === "checkResult") checkResult = Number(p.value);
+    });
+  });
+  return { status, prog, newVersion, intro, size, checkResult };
+};
+
+const fetchOtaInfo = async () => {
+  try {
+    const res = await getDeviceServices({
+      ota: ["otaStatus", "otaProgress", "newVersion", "introduction", "size", "checkResult"],
+    });
+    if (res?.status === 0) {
+      const { status, prog, newVersion, intro, size, checkResult } =
+        parseOtaFromServiceList(res.serviceList);
+      if (newVersion) {
+        versionState.newVersion = newVersion;
+      }
+      if (intro) {
+        versionState.log = intro;
+      }
+      if (size) {
+        versionState.size = size;
+      }
+      if (typeof prog === "number") {
+        progress.value = Math.max(0, Math.min(100, prog));
+      }
+      if (status === 300) {
+        phase.value = "install";
+      }
+      hasNew.value =
+        !!versionState.newVersion &&
+        versionState.newVersion !== versionState.currentVersion &&
+        (checkResult === undefined || checkResult === 0);
+      if (progress.value >= 100) {
+        clearOtaPoll();
+        phase.value = "done";
+      }
+    }
+  } catch (e) {
+    console.error(e);
+  }
+};
+
+const startOtaPolling = () => {
+  clearOtaPoll();
+  otaPollTimer = window.setInterval(async () => {
+    await fetchOtaInfo();
+  }, 1500);
+};
+
+onMounted(() => {
+  checkStatus.value = "checking";
+  hasNew.value = false;
+  fetchOtaInfo().finally(() => {
+    checkStatus.value = "idle";
+  });
 });
 </script>
 
@@ -104,9 +190,9 @@ onBeforeUnmount(() => {
       <section class="hero">
         <img src="/images/piggy.png" alt="猪猪侠" class="hero__img" />
         <div class="hero__tip">
-          <template v-if="hasNew">发现新版本</template>
-          <template v-else-if="checkStatus === 'checking'">正在检查...</template>
-          <template v-else>已是最新版本</template>
+          <template v-if="hasNew">{{ t("foundNewVersion") }}</template>
+          <template v-else-if="checkStatus === 'checking'">{{ t("checking") }}</template>
+          <template v-else>{{ t("latestVersion") }}</template>
         </div>
       </section>
 
@@ -119,7 +205,7 @@ onBeforeUnmount(() => {
         >
           <div>
             <div class="version-row__title">
-              新版本
+              {{ t("newVersion") }}
               <span class="dot" v-if="hasNew"></span>
             </div>
             <div class="version-row__desc">{{ versionState.newVersion }}</div>
@@ -129,7 +215,7 @@ onBeforeUnmount(() => {
 
         <div class="version-row">
           <div>
-            <div class="version-row__title">当前版本</div>
+            <div class="version-row__title">{{ t("currentVersion") }}</div>
             <div class="version-row__desc">{{ versionState.currentVersion }}</div>
           </div>
           <van-icon name="arrow" color="#c0c0c0" />
@@ -146,7 +232,7 @@ onBeforeUnmount(() => {
         :text-color="checkStatus === 'checking' ? '#9aa3ad' : undefined"
         @click="startCheck"
       >
-        {{ checkStatus === "checking" ? "正在检查" : "检查更新" }}
+        {{ checkStatus === "checking" ? t("checking") : t("checkUpdate") }}
       </van-button>
     </template>
 
@@ -154,12 +240,12 @@ onBeforeUnmount(() => {
       <section class="hero">
         <img src="/images/piggy.png" alt="猪猪侠" class="hero__img" />
         <div class="detail__version">{{ versionState.newVersion }}</div>
-        <div class="detail__size">大小： {{ versionState.size }}</div>
+        <div class="detail__size">{{ t("size") }}： {{ versionState.size }}</div>
       </section>
 
       <section class="card changelog">
         <div class="changelog__header">
-          <span>更新日志</span>
+          <span>{{ t("updateLog") }}</span>
           <van-icon name="arrow-down" />
         </div>
         <div class="changelog__text">
@@ -168,16 +254,17 @@ onBeforeUnmount(() => {
       </section>
 
       <van-button type="primary" round block class="check-btn" @click="startDownload">
-        下载并安装
+        {{ t("downloadAndInstall") }}
       </van-button>
     </template>
 
     <template v-else-if="phase === 'download' || phase === 'install'">
       <section class="download">
         <van-circle
+          v-model:current-rate="progress"
           :rate="progress"
           size="200"
-          :text="`${progress}%`"
+          :text="progressText"
           layer-color="#e6e6e6"
           :color="{
             '0%': '#5f9dff',
@@ -185,18 +272,18 @@ onBeforeUnmount(() => {
           }"
           :stroke-width="100"
           text-color="#111"
-          :speed="100"
+          :speed="0"
         />
         <div class="download__status">
-          {{ phase === "download" ? "下载中..." : "正在安装..." }}
+          {{ phase === "download" ? t("downloading") : t("installing") }}
         </div>
         <div class="detail__version">{{ versionState.newVersion }}</div>
-        <div class="detail__size">大小： {{ versionState.size }}</div>
+        <div class="detail__size">{{ t("size") }}： {{ versionState.size }}</div>
       </section>
 
       <section class="card changelog">
         <div class="changelog__header">
-          <span>更新日志</span>
+          <span>{{ t("updateLog") }}</span>
           <van-icon name="arrow-down" />
         </div>
         <div class="changelog__text">
@@ -204,15 +291,16 @@ onBeforeUnmount(() => {
         </div>
       </section>
 
-      <van-button round block class="cancel-btn">取消</van-button>
+      <van-button round block class="cancel-btn">{{ t("Cancel") }}</van-button>
     </template>
 
     <template v-else>
       <section class="download">
         <van-circle
+          v-model:current-rate="progress"
           :rate="100"
           size="200"
-          text="100%"
+          :text="progressText"
           layer-color="#e6e6e6"
           :color="{
             '0%': '#5f9dff',
@@ -220,12 +308,12 @@ onBeforeUnmount(() => {
           }"
           :stroke-width="100"
           text-color="#111"
-          :speed="100"
+          :speed="0"
         />
-        <div class="download__status">安装完毕...</div>
+        <div class="download__status">{{ t("installCompleted") }}</div>
       </section>
       <van-button type="primary" round block class="check-btn" @click="finishAndBack">
-        我知道了
+        {{ t("gotIt") }}
       </van-button>
     </template>
   </div>
