@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed, ref, reactive, onBeforeUnmount } from "vue";
 import { serviceList } from "@/pages/service";
+import { console } from "inspector";
 
 const versions = computed(() => {
   const { ota, deviceInfo } = serviceList.value;
@@ -21,7 +22,7 @@ const hasNew = ref(versionState.hasNew);
 const phase = ref<"list" | "detail" | "download" | "install" | "done">(
   "list"
 );
-const progress = ref(68);
+const progress = ref(0);
 let timer: number | undefined;
 let checkTimer: number | undefined;
 const checkStatus = ref<"idle" | "checking">("idle");
@@ -33,13 +34,13 @@ const openDetail = () => {
 
 const startDownload = () => {
   phase.value = "download";
-  progress.value = 68;
+  progress.value = 0;
   startProgress("download");
 };
 
 const startInstall = () => {
   phase.value = "install";
-  progress.value = 68;
+  progress.value = 0;
   startProgress("install");
 };
 
@@ -87,7 +88,7 @@ const finishAndBack = () => {
   versionState.currentVersion = versionState.newVersion;
   hasNew.value = false;
   phase.value = "list";
-  progress.value = 68;
+  progress.value = 0;
   checkStatus.value = "idle";
 };
 
@@ -102,11 +103,11 @@ onBeforeUnmount(() => {
     <template v-if="phase === 'list'">
       <section class="hero">
         <img src="/images/piggy.png" alt="猪猪侠" class="hero__img" />
-        <p class="hero__tip">
+        <div class="hero__tip">
           <template v-if="hasNew">发现新版本</template>
           <template v-else-if="checkStatus === 'checking'">正在检查...</template>
           <template v-else>已是最新版本</template>
-        </p>
+        </div>
       </section>
 
       <section class="card version-card">
@@ -117,21 +118,19 @@ onBeforeUnmount(() => {
           @click="openDetail"
         >
           <div>
-            <p class="version-row__title">
+            <div class="version-row__title">
               新版本
               <span class="dot" v-if="hasNew"></span>
-            </p>
-            <p class="version-row__desc">{{ versionState.newVersion }}</p>
+            </div>
+            <div class="version-row__desc">{{ versionState.newVersion }}</div>
           </div>
           <van-icon name="arrow" color="#c0c0c0" />
         </div>
 
-        <div v-if="hasNew" class="divider"></div>
-
         <div class="version-row">
           <div>
-            <p class="version-row__title">当前版本</p>
-            <p class="version-row__desc">{{ versionState.currentVersion }}</p>
+            <div class="version-row__title">当前版本</div>
+            <div class="version-row__desc">{{ versionState.currentVersion }}</div>
           </div>
           <van-icon name="arrow" color="#c0c0c0" />
         </div>
@@ -154,8 +153,8 @@ onBeforeUnmount(() => {
     <template v-else-if="phase === 'detail'">
       <section class="hero">
         <img src="/images/piggy.png" alt="猪猪侠" class="hero__img" />
-        <p class="detail__version">{{ versionState.newVersion }}</p>
-        <p class="detail__size">大小： {{ versionState.size }}</p>
+        <div class="detail__version">{{ versionState.newVersion }}</div>
+        <div class="detail__size">大小： {{ versionState.size }}</div>
       </section>
 
       <section class="card changelog">
@@ -163,9 +162,9 @@ onBeforeUnmount(() => {
           <span>更新日志</span>
           <van-icon name="arrow-down" />
         </div>
-        <p class="changelog__text">
+        <div class="changelog__text">
           {{ versionState.log }}
-        </p>
+        </div>
       </section>
 
       <van-button type="primary" round block class="check-btn" @click="startDownload">
@@ -184,15 +183,15 @@ onBeforeUnmount(() => {
             '0%': '#5f9dff',
             '100%': '#2f7bff',
           }"
-          :stroke-width="12"
+          :stroke-width="100"
           text-color="#111"
           :speed="100"
         />
-        <p class="download__status">
+        <div class="download__status">
           {{ phase === "download" ? "下载中..." : "正在安装..." }}
-        </p>
-        <p class="detail__version">{{ versionState.newVersion }}</p>
-        <p class="detail__size">大小： {{ versionState.size }}</p>
+        </div>
+        <div class="detail__version">{{ versionState.newVersion }}</div>
+        <div class="detail__size">大小： {{ versionState.size }}</div>
       </section>
 
       <section class="card changelog">
@@ -200,9 +199,9 @@ onBeforeUnmount(() => {
           <span>更新日志</span>
           <van-icon name="arrow-down" />
         </div>
-        <p class="changelog__text">
+        <div class="changelog__text">
           {{ versionState.log }}
-        </p>
+        </div>
       </section>
 
       <van-button round block class="cancel-btn">取消</van-button>
@@ -219,11 +218,11 @@ onBeforeUnmount(() => {
             '0%': '#5f9dff',
             '100%': '#2f7bff',
           }"
-          :stroke-width="12"
+          :stroke-width="100"
           text-color="#111"
           :speed="100"
         />
-        <p class="download__status">安装完毕...</p>
+        <div class="download__status">安装完毕...</div>
       </section>
       <van-button type="primary" round block class="check-btn" @click="finishAndBack">
         我知道了
@@ -234,7 +233,6 @@ onBeforeUnmount(() => {
 
 <style scoped lang="scss">
 .firmware-page {
-  min-height: calc(100vh - 56px);
   background: var(--common-bg-main);
   padding: 16px 16px 32px;
   display: flex;
@@ -270,6 +268,7 @@ onBeforeUnmount(() => {
   border-radius: 18px;
   box-shadow: 0 8px 22px rgba(0, 0, 0, 0.06);
   padding: 14px 16px;
+  box-sizing: border-box;
 }
 
 .version-card {
@@ -277,6 +276,7 @@ onBeforeUnmount(() => {
     display: flex;
     align-items: center;
     justify-content: space-between;
+    height: 63px;
 
     &__title {
       font-size: 16px;
@@ -287,17 +287,11 @@ onBeforeUnmount(() => {
     }
 
     &__desc {
-      margin-top: 6px;
       color: #7a828a;
     }
   }
 }
 
-.divider {
-  height: 1px;
-  background: #eef0f3;
-  margin: 12px 0;
-}
 
 .dot {
   width: 8px;
