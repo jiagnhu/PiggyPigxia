@@ -7,6 +7,8 @@ import {
   StatusBarHeightKey,
   Language,
 } from "@/config/constans";
+import { getAgentProperties, setAgentProperties } from "@/hoLink";
+import { getSimpleDeviceInfo } from "@/hoLink";
 
 export const isReqSuccess = (responseCode: any) =>
   typeof responseCode === "object"
@@ -62,6 +64,11 @@ export const setDevName = (value: string) =>
   hoLink.modifyDeviceName({
     deviceName: value,
   });
+
+// 用户/智能体属性
+export const fetchAgentProperties = (params: any) => getAgentProperties(params);
+export const saveAgentProperties = (params: any) => setAgentProperties(params);
+export const fetchSimpleDeviceInfo = () => getSimpleDeviceInfo();
 
 /** UI相关 *********************/
 

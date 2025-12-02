@@ -18,7 +18,10 @@ export const ProfileMapStoreKey = {
   },
   AIToy: {
     volume: "volume",
+  },
+  batteryPower: {
     battery: "battery",
+    chargingStatus: "chargingStatus",
   },
   // 设备名称
   deviceInfo: {

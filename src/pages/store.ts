@@ -40,6 +40,7 @@ export const useStore = defineStore("main", {
     offline: false,
     // 电量
     battery: 0,
+    chargingStatus: 0,
     // 当前灯光模式
     currentMode: -1,
     lightMode: -1,
@@ -56,7 +57,7 @@ export const useStore = defineStore("main", {
     //UI相关
     uiInfo: {
       statusBarHeight: 0,
-      themeMode: 2,
+      themeMode: 1,
     },
 
     devName: "",
@@ -147,7 +148,9 @@ export const useStore = defineStore("main", {
           switch: ["on"],
           cct: ["colorTemperature"],
           AIToy: ["volume"],
+          batteryPower: ["battery", "chargingStatus"],
         });
+        console.log('获取电量', res)
         if (isReqSuccess(res?.status)) {
           this.updateStoreData(res.serviceList);
           dealServiceData(res.serviceList);

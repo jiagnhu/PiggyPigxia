@@ -5,6 +5,8 @@ const OptDevice = {
   getDevInfoAll: "getDevInfoAll",
   getDeviceServices: "getDeviceServices",
   setDeviceProperty: "setDeviceProperty",
+  getAgentProperties: "getAgentProperties",
+  setAgentProperties: "setAgentProperties",
   modifyDeviceName: "modifyDeviceName",
   deleteDevice: "deleteDevice",
   getRoomInfo: "getRoomInfo",
@@ -12,6 +14,7 @@ const OptDevice = {
   createBleConnection: "createBleConnection",
   readCharacteristic: "readCharacteristic",
   writeCharacteristic: "writeCharacteristic",
+  getSimpleDeviceInfo: "getSimpleDeviceInfo",
 } as const;
 
 /**

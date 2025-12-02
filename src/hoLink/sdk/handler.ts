@@ -16,6 +16,7 @@ import type {
   GetThemeMode,
   UseToast,
   GetDeviceInfo,
+  CommonRequestPromise,
 } from "../types/type";
 
 export type RequestNoParam = () => CommonRequestPromise;
@@ -55,6 +56,13 @@ export const getDeviceServices = (param: {
 export const setDeviceProperty: SetDeviceProperty = (params) =>
   useRequest(OptNames.setDeviceProperty, params);
 
+// 用户/智能体属性
+export const getAgentProperties = (params: any): CommonRequestPromise =>
+  useRequest(OptNames.getAgentProperties, params);
+
+export const setAgentProperties = (params: any): CommonRequestPromise =>
+  useRequest(OptNames.setAgentProperties, params);
+
 // 修改设备名称
 export const modifyDeviceName = (params: { deviceName: string }) =>
   useRequest(OptNames.modifyDeviceName, params);
@@ -66,6 +74,10 @@ export const deleteDevice: RequestNoParam = () =>
 // 获取设备所属空间
 export const getRoomInfo: GetRoomInfo = () =>
   useRequest(OptNames.getRoomInfo, "");
+
+// 获取简单设备信息（含 deviceId）
+export const getSimpleDeviceInfo: RequestNoParam = () =>
+  useRequest(OptNames.getSimpleDeviceInfo, "");
 
 // 修改设备所属空间
 export const modifyDeviceRoom: ModifyDeviceRoom = (params) =>

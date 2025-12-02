@@ -27,6 +27,7 @@ declare module '@vue/runtime-core' {
     Next: typeof import('./src/components/my-icon/svg/next.vue')['default']
     On: typeof import('./src/components/my-icon/svg/on.vue')['default']
     Pad: typeof import('./src/components/my-icon/svg/pad.vue')['default']
+    ProgressRing: typeof import('./src/components/progress-ring.vue')['default']
     RouterLink: typeof import('vue-router')['RouterLink']
     RouterView: typeof import('vue-router')['RouterView']
     Smart: typeof import('./src/components/my-icon/svg/smart.vue')['default']

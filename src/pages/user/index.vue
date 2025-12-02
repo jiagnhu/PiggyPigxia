@@ -1,14 +1,20 @@
 <script setup lang="ts">
-import { ref, nextTick } from "vue";
+import { ref, nextTick, onMounted } from "vue";
 import { useI18n } from "vue-i18n";
+import {
+  fetchAgentProperties,
+  saveAgentProperties,
+  fetchSimpleDeviceInfo,
+} from "@/api/api";
 
 const { t } = useI18n();
 
 const user = ref({
   name: t("nickname"),
-  gender: t("secret"),
+  gender: "secret",
   birthday: "1999/10/22",
 });
+const deviceId = ref("");
 
 const showNamePopup = ref(false);
 const tempName = ref(user.value.name);
@@ -20,6 +26,8 @@ const genderOptions = [
   { label: "female", text: t("female") },
   { label: "secret", text: t("secret") },
 ];
+const genderLabel = (val: string) =>
+  genderOptions.find((g) => g.label === val)?.text || val;
 
 const showBirthdayPopup = ref(false);
 const birthdayDate = ref(["1999", "10", "22"]);
@@ -42,6 +50,7 @@ const onCancelName = () => {
 const onConfirmName = () => {
   user.value.name = tempName.value.trim() || "昵称";
   showNamePopup.value = false;
+  persistAgent();
 };
 
 const openGenderPopup = () => {
@@ -50,8 +59,9 @@ const openGenderPopup = () => {
 };
 
 const onConfirmGender = () => {
-  user.value.gender = tempGender.value;
+  user.value.gender = tempGender.value as string;
   showGenderPopup.value = false;
+  persistAgent();
 };
 
 const onCancelGender = () => {
@@ -73,7 +83,69 @@ const onConfirmBirthday = () => {
   const [y, m, d] = birthdayDate.value;
   user.value.birthday = `${y}/${m}/${d}`;
   showBirthdayPopup.value = false;
+  persistAgent();
 };
+
+const loadAgent = async () => {
+  try {
+    if (!deviceId.value) {
+      const simple = await fetchSimpleDeviceInfo();
+      console.log('设备simple', simple)
+      if (simple?.status === 0 && simple.deviceId) {
+        deviceId.value = simple.deviceId;
+      }
+    }
+    if (!deviceId.value) return;
+
+    const res = await fetchAgentProperties({
+      deviceId: deviceId.value,
+      code: "userName,userGender,userBirthday",
+    });
+    console.log('用户信息的结果呢', res)
+    const resultData = res?.resultData || res?.data || {};
+    const list =
+      resultData?.data ||
+      resultData?.configs ||
+      resultData?.agentConfigs?.configs ||
+      [];
+    list.forEach((item: any) => {
+      const key = item.code || item.key;
+      const val = item.valueText || item.value || item.rawCfgValue;
+      if (key === "userName" && val) user.value.name = String(val);
+      if (key === "userGender" && val) user.value.gender = String(val);
+      if (key === "userBirthday" && val) user.value.birthday = String(val);
+    });
+  } catch (e) {
+    console.error("load agent props failed", e);
+  }
+};
+
+const persistAgent = async () => {
+  try {
+    if (!deviceId.value) {
+      const simple = await fetchSimpleDeviceInfo();
+      if (simple?.status === 0 && simple.deviceId) {
+        deviceId.value = simple.deviceId;
+      }
+    }
+    if (!deviceId.value) return;
+
+    await saveAgentProperties({
+      deviceId: deviceId.value,
+      data: [
+        { code: "userName", value: user.value.name },
+        { code: "userGender", value: user.value.gender },
+        { code: "userBirthday", value: user.value.birthday },
+      ],
+    });
+  } catch (e) {
+    console.error("save agent props failed", e);
+  }
+};
+
+onMounted(() => {
+  loadAgent();
+});
 </script>
 
 <template>
@@ -92,7 +164,7 @@ const onConfirmBirthday = () => {
       <div class="row" @click="openGenderPopup">
         <span class="row__label">{{ t("gender") }}</span>
         <div class="row__value">
-          <span>{{ user.gender }}</span>
+          <span>{{ genderLabel(user.gender) }}</span>
           <van-icon name="arrow" size="16" color="#b0b0b0" />
         </div>
       </div>

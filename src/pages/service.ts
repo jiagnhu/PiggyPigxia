@@ -29,6 +29,10 @@ export const serviceList = ref({
     bssid: { value: "" },
   },
   ota: {},
+  batteryPower: {
+    battery: { value: 0 },
+    chargingStatus: { value: 0 },
+  },
 });
 
 // 获取缓存值

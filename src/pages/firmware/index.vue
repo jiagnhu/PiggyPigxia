@@ -1,25 +1,17 @@
 <script setup lang="ts">
 import { computed, ref, reactive, onBeforeUnmount, onMounted } from "vue";
-import { serviceList } from "@/pages/service";
 import { getDeviceServices } from "@/api/api";
 import { useI18n } from "vue-i18n";
 import { useStore } from "@/pages/store";
 import { storeToRefs } from "pinia";
+import ProgressRing from "@/components/progress-ring.vue";
 
-const versions = computed(() => {
-  const { ota, deviceInfo } = serviceList.value;
-  return {
-    newVersion: ota?.newVersion?.value || "1.11.001.1",
-    currentVersion: deviceInfo?.firmwareVersion?.value || "1.11.001.0",
-    hasNew: true,
-    size: ota?.size?.value || "2.6M",
-    log:
-      ota?.changelog?.value ||
-      "这里是更新内容日志，提示本次更新重点提升的性能指标或体验。",
-  };
+const versionState = reactive({
+  newVersion: "",
+  currentVersion: "",
+  size: "",
+  log: "",
 });
-
-const versionState = reactive({ ...versions.value });
 const hasNew = ref(false);
 const { t } = useI18n();
 const { uiInfo } = storeToRefs(useStore());
@@ -31,11 +23,37 @@ const circleColor = computed(() =>
     ? { "0%": "#224FA6", "100%": "#0093FE" }
     : { "0%": "#9DB9F1", "100%": "#1D73EB" }
 );
+const baseStartColor = computed(() => circleColor.value["0%"]);
+const baseEndColor = computed(() => circleColor.value["100%"]);
+const normalizeProgress = computed(
+  () => Math.min(Math.max(progress.value, 0), 100) / 100
+);
+const hexToRgb = (hex: string) => {
+  const clean = hex.replace("#", "");
+  const num = parseInt(clean, 16);
+  return {
+    r: (num >> 16) & 255,
+    g: (num >> 8) & 255,
+    b: num & 255,
+  };
+};
+const withAlpha = (hex: string, alpha: number) => {
+  const { r, g, b } = hexToRgb(hex);
+  return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+};
+const startColor = computed(() =>
+  withAlpha(baseStartColor.value, 0.3 + 0.4 * normalizeProgress.value)
+);
+const endColor = computed(() =>
+  withAlpha(baseEndColor.value, 0.6 + 0.4 * normalizeProgress.value)
+);
+const ringSize = 220;
+const ringStroke = 18;
 
 const phase = ref<"list" | "detail" | "download" | "install" | "done">(
-  "done"
+  "list"
 );
-const progress = ref(60);
+const progress = ref(0);
 const progressText = computed(() => Math.round(progress.value));
 let timer: number | undefined;
 let checkTimer: number | undefined;
@@ -127,31 +145,65 @@ const parseOtaFromServiceList = (list: any[]) => {
   let intro: string | undefined = undefined;
   let size: string | undefined = undefined;
   let checkResult: number | undefined = undefined;
+  let firmwareVersion: string | undefined = undefined;
 
   list?.forEach((service: any) => {
-    if (service?.id !== "ota") return;
-    service.propertyList?.forEach((p: any) => {
-      if (p.id === "otaStatus") status = Number(p.value);
-      if (p.id === "otaProgress") prog = Number(p.value);
-      if (p.id === "newVersion") newVersion = String(p.value || "");
-      if (p.id === "introduction") intro = String(p.value || "");
-      if (p.id === "size") size = String(p.value || "");
-      if (p.id === "checkResult") checkResult = Number(p.value);
-    });
+    if (service?.id === "ota") {
+      service.propertyList?.forEach((p: any) => {
+        if (p.id === "otaStatus") status = Number(p.value);
+        if (p.id === "otaProgress") prog = Number(p.value);
+        if (p.id === "newVersion") newVersion = String(p.value || "");
+        if (p.id === "introduction") intro = String(p.value || "");
+        if (p.id === "size") size = String(p.value || "");
+        if (p.id === "checkResult") checkResult = Number(p.value);
+      });
+    }
+    if (service?.id === "deviceInfo") {
+      service.propertyList?.forEach((p: any) => {
+        if (p.id === "firmwareVersion") firmwareVersion = String(p.value || "");
+      });
+    }
   });
-  return { status, prog, newVersion, intro, size, checkResult };
+  return {
+    status,
+    prog,
+    newVersion,
+    intro,
+    size,
+    checkResult,
+    firmwareVersion,
+  };
 };
 
 const fetchOtaInfo = async () => {
   try {
     const res = await getDeviceServices({
-      ota: ["otaStatus", "otaProgress", "newVersion", "introduction", "size", "checkResult"],
+      ota: [
+        "otaStatus",
+        "otaProgress",
+        "newVersion",
+        "introduction",
+        "size",
+        "checkResult",
+      ],
+      deviceInfo: ["firmwareVersion"],
     });
     if (res?.status === 0) {
-      const { status, prog, newVersion, intro, size, checkResult } =
+      const {
+        status,
+        prog,
+        newVersion,
+        intro,
+        size,
+        checkResult,
+        firmwareVersion,
+      } =
         parseOtaFromServiceList(res.serviceList);
       if (newVersion) {
         versionState.newVersion = newVersion;
+      }
+      if (firmwareVersion) {
+        versionState.currentVersion = firmwareVersion;
       }
       if (intro) {
         versionState.log = intro;
@@ -278,21 +330,19 @@ onMounted(() => {
 
     <template v-else-if="phase === 'download' || phase === 'install'">
       <section class="download">
-        <van-circle
-          v-model:current-rate="progress"
-          :rate="progress"
-          size="220"
-          :layer-color="layerColor"
-          :color="circleColor"
-          :stroke-width="100"
-          text-color="#111"
-          :speed="0"
+        <ProgressRing
+          :progress="progress"
+          :size="ringSize"
+          :stroke="ringStroke"
+          :track-color="layerColor"
+          :start-color="startColor"
+          :end-color="endColor"
         >
           <div class="progress-text">
             <span class="progress-text__num">{{ progressText }}</span>
             <span class="progress-text__unit">%</span>
           </div>
-        </van-circle>
+        </ProgressRing>
         <div class="download__status">
           {{ phase === "download" ? t("downloading") : t("installing") }}
         </div>
@@ -313,22 +363,19 @@ onMounted(() => {
 
     <template v-else>
       <section class="download">
-        <van-circle
-          v-model:current-rate="progress"
-          :rate="100"
-          size="220"
-          :text="''"
-          :layer-color="layerColor"
-          :color="circleColor"
-          :stroke-width="100"
-          text-color="#111"
-          :speed="0"
+        <ProgressRing
+          :progress="progress"
+          :size="ringSize"
+          :stroke="ringStroke"
+          :track-color="layerColor"
+          :start-color="startColor"
+          :end-color="endColor"
         >
           <div class="progress-text">
             <span class="progress-text__num">{{ progressText }}</span>
             <span class="progress-text__unit">%</span>
           </div>
-        </van-circle>
+        </ProgressRing>
         <div class="download__status">{{ t("installCompleted") }}</div>
       </section>
       <van-button type="primary" round block class="check-btn" @click="finishAndBack">
@@ -430,6 +477,7 @@ onMounted(() => {
   align-items: center;
   gap: 8px;
   margin-top: 48px;
+  position: relative;
 
   .progress-text {
     position: absolute;
@@ -444,11 +492,13 @@ onMounted(() => {
     &__num {
       font-size: 48px;
       line-height: 1;
+      color: var(--common-text-color)
     }
 
     &__unit {
       font-size: 20px;
       line-height: 1;
+      color: var(--common-text-color)
     }
   }
 
@@ -458,6 +508,14 @@ onMounted(() => {
     color: var(--common-text-color);
     font-weight: 500;
   }
+}
+
+.progress-ring {
+  position: relative;
+}
+
+.progress-ring__svg {
+  display: block;
 }
 
 .detail__version {
