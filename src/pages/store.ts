@@ -56,7 +56,7 @@ export const useStore = defineStore("main", {
     //UI相关
     uiInfo: {
       statusBarHeight: 0,
-      themeMode: 1,
+      themeMode: 2,
     },
 
     devName: "",

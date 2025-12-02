@@ -59,29 +59,30 @@ onMounted(() => {
 .hardware {
   min-height: calc(100vh - 56px);
   background: var(--common-bg-main);
-  padding: 10px 12px 20px;
+  padding: 0px 12px;
   box-sizing: border-box;
 }
 
 .info-card {
   background: var(--common-bg-card);
-  border-radius: 18px;
-  box-shadow: 0 8px 18px rgba(0, 0, 0, 0.04);
-  padding: 6px 0;
+  border-radius: var(--common-br-ra);
 }
 
 .info-row {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 14px 18px;
+  margin: 0 9px;
+  height: 48px;
   font-size: 16px;
+  font-weight: 500;
   color: var(--common-text-color);
-  border-bottom: 1px solid #eef0f3;
+  border-bottom: 1px solid var(--common-br-b-c);
+  box-sizing: border-box;
 
   &__value {
-    color: #7a8087;
-    font-weight: 600;
+    color: var(--common-text-value-color);
+    font-size: 14px;
   }
 
   &.last {

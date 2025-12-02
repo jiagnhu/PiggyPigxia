@@ -68,15 +68,17 @@ onMounted(() => {
         <div class="actions__row">
           <div class="tile" @click="goUser">
             <span>{{ t("personalInfo") }}</span>
-            <van-icon name="user-o" />
+            <img src="/images/Love.png" alt="" class="tile__icon" />
           </div>
           <div class="tile" @click="goHardware">
             <span>{{ t("hardwareDevice") }}</span>
-            <van-icon name="setting-o" />
+            <img src="/images/shezhi.png" alt="" class="tile__icon" />
           </div>
-          <div class="tile" @click="goFirmware">
+        </div>
+        <div class="actions__row single">
+          <div class="tile full" @click="goFirmware">
             <span>{{ t("firmwareUpgrade") }}</span>
-            <van-icon name="cloud-o" />
+            <img src="/images/cloud.png" alt="" class="tile__icon" />
           </div>
         </div>
       </section>
@@ -88,6 +90,7 @@ onMounted(() => {
 .home-preview {
   background: var(--common-bg-main);
   padding: 0 12px;
+  padding-bottom: 20px;
   box-sizing: border-box;
 }
 
@@ -104,6 +107,10 @@ onMounted(() => {
   height: 300px;
   box-sizing: border-box;
   padding-top: 22px;
+  position: sticky;
+  top: 0;
+  z-index: 0;
+  background: var(--common-bg-main);
 
   &__img {
     width: 186px;
@@ -122,6 +129,8 @@ onMounted(() => {
 .card {
   background: var(--common-bg-card);
   border-radius: var(--common-br-ra);
+  position: relative;
+  z-index: 1;
 }
 
 .status-card {
@@ -174,7 +183,7 @@ onMounted(() => {
 
   &__footer {
     font-size: 16px;
-    color: rgba(0,0,0,0.6);
+    color: var(--common-text-sub);
   }
 
   :deep(.van-slider) {
@@ -191,6 +200,8 @@ onMounted(() => {
 
 .actions {
   width: 100%;
+  position: relative;
+  z-index: 1;
 
   &__row {
     display: flex;
@@ -205,7 +216,7 @@ onMounted(() => {
       align-items: center;
       justify-content: space-between;
       padding: 0 12px;
-      background: #fff;
+      background: var(--common-bg-card);
       border-radius: var(--common-br-ra);
       font-size: 16px;
       color: var(--common-text-color);
@@ -219,9 +230,16 @@ onMounted(() => {
         transform: scale(0.99);
       }
 
-      :deep(.van-icon) {
-        color: #222;
+      .tile__icon {
+        width: 22px;
+        height: 22px;
+        object-fit: contain;
       }
+    }
+
+    &.single .tile.full {
+      flex: 0 0 100%;
+      margin-top: 12px;
     }
   }
 }

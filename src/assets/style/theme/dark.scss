@@ -1,12 +1,18 @@
 .van-theme-dark {
   // 自定义
-  --common-bg-nav: #010101;
-  --common-bg-main: #010101;
-  --common-bg-card: #404040;
+  --common-bg-nav: #000000;
+  --common-bg-main: #000000;
+  --common-bg-card: #202022;
   --common-title-text-color: #e6e3e5;
-  --common-text-color: #e6e3e5;
+  --common-text-color: rgba(255,255,255,0.86);
+  --common-text-value-color: #828282;
+  --common-text-sub: rgba(255,255,255,0.6);
   --common-icon-unselect-bg: #535353;
   --common-br-ra: 13px;
+  --common-br-b-c: rgba(255,255,255,0.2);
+  --common-primary: #5f9dff;
+  --common-primary-strong: #256FFF;
+  --common-bg-img: url('/images/hei-shengji.png');
 
   --van-tabs-nav-background: var(--common-bg-card);
   --van-nav-bar-title-text-color: var(--common-title-text-color);

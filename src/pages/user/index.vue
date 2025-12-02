@@ -78,7 +78,7 @@ const onConfirmBirthday = () => {
 
 <template>
   <div class="user-page">
-    <p class="section-title">{{ t("generalSettings") }}</p>
+    <div class="section-title">{{ t("generalSettings") }}</div>
 
     <section class="card">
       <div class="row" @click="openNamePopup">
@@ -106,13 +106,14 @@ const onConfirmBirthday = () => {
       </div>
     </section>
 
-    <van-popup v-model:show="showNamePopup" round position="center">
+    <van-popup v-model:show="showNamePopup" 
+      round position="center"
+      class="name-popup-wrapper">
       <div class="popup">
         <div class="popup__title">{{ t("name") }}</div>
         <van-field
           v-model="tempName"
           :placeholder="t('nickname')"
-          border
           input-align="left"
           clearable
         />
@@ -189,37 +190,40 @@ const onConfirmBirthday = () => {
 <style scoped lang="scss">
 .user-page {
   background: var(--common-bg-main);
-  padding: 12px 12px 24px;
+  padding: 0 12px;
   box-sizing: border-box;
 }
 
 .section-title {
-  margin: 12px 0 10px;
-  color: #9aa3ad;
+  color: var(--common-text-sub);
   font-size: 14px;
+  font-weight: 500;
+  padding: 21px 12px 8px;
 }
 
 .card {
   background: var(--common-bg-card);
-  border-radius: 18px;
-  box-shadow: 0 8px 18px rgba(0, 0, 0, 0.04);
-  padding: 6px 0;
+  border-radius: var(--common-br-ra);
 }
 
 .row {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 16px 18px;
+  margin: 0 12px;
+  height: 48px;
   font-size: 16px;
+  font-weight: 500;
   color: var(--common-text-color);
-  border-bottom: 1px solid #eef0f3;
+  border-bottom: 1px solid var(--common-br-b-c);
+  box-sizing: border-box;
 
   &__value {
     display: flex;
     align-items: center;
     gap: 6px;
-    color: #7a8087;
+    color: var(--common-text-value-color);
+    font-size: 14px;
   }
 
   &.last {
@@ -227,26 +231,42 @@ const onConfirmBirthday = () => {
   }
 }
 
+:deep(.van-radio__icon--checked.van-radio__icon--dot) {
+  background-color: var(--common-primary);
+  border-color: var(--common-primary);
+  box-shadow: none;
+}
+
+:deep(.van-radio__icon--checked.van-radio__icon--dot .van-radio__icon--dot__icon) {
+  background-color: #fff !important;
+}
+
 .popup {
   width: 280px;
-  padding: 16px 18px 12px;
+  padding: 15px 24px 10px;
   background: var(--common-bg-card);
-  border-radius: 16px;
+  
 
   &__title {
-    font-size: 18px;
-    font-weight: 600;
+    font-size: 20px;
+    font-weight: 500;
     color: var(--common-text-color);
-    margin-bottom: 12px;
+    margin-bottom: 15px;
   }
 
   :deep(.van-field) {
-    padding: 4px 0 6px;
+    padding: 0;
+    height: 36px;
     font-size: 16px;
+    color: var(--common-text-sub);
+    border-color: var(--common-bg-card);
+    
     .van-field__control {
       padding-top: 6px;
       padding-bottom: 6px;
-      color: #333;
+      color: var(--common-text-color);
+      background-color: var(--common-bg-card);
+      border-color: var(--common-bg-card);
     }
   }
 
@@ -254,7 +274,7 @@ const onConfirmBirthday = () => {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding-top: 12px;
+    padding-top: 18px;
   }
 
   &__btn {
@@ -262,62 +282,76 @@ const onConfirmBirthday = () => {
     background: transparent;
     border: none;
     font-size: 16px;
-    color: #2f7bff;
-    padding: 10px 0;
+    font-weight: 500;
+    height: 36px;
   }
 
   &__divider {
     width: 1px;
     height: 24px;
-    background: #e2e2e2;
+    background: rgba(0,0,0,0.2);
   }
 
   .cancel {
-    color: #2f7bff;
+    color: var(--common-primary);
   }
 
   .confirm {
-    color: #2f7bff;
+    color: var(--common-primary);
   }
 }
 
-.gender-popup {
-  width: 100%;
-  padding: 20px 20px 40px;
-  margin: 0 auto 10px;
-  box-sizing: border-box;
+:deep(.name-popup-wrapper) {
+  border-radius: var(--common-br-ra);
+  box-shadow: 0px 1px 8px 0px rgba(0,0,0,0.15);
 }
 
 :deep(.gender-popup-wrapper.van-popup) {
   width: calc(100% - 1rem);
   margin: 0 0.5rem 0.5rem;
-  border-radius: 20px;
+  border-radius: var(--common-br-ra);
 }
 
-.gender-list {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
+.gender-popup {
+  width: 100%;
+  padding: 15px 24px;
+  box-sizing: border-box;
 
-  :deep(.van-radio) {
-    padding: 0;
-  }
-}
+  .gender-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
 
-.gender-item {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 12px 0;
-  border-bottom: 1px solid #eaeaea;
-  color: var(--common-text-color);
-
-  &__label {
-    font-size: 16px;
+    :deep(.van-radio) {
+      padding: 0;
+    }
   }
 
-  &:last-child {
-    border-bottom: none;
+  .gender-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 1px solid var(--common-br-b-c);
+    color: var(--common-text-color);
+    height: 40px;
+
+    &__label {
+      font-size: 16px;
+      font-weight: 500;
+    }
+
+    &:last-child {
+      border-bottom: none;
+    }
+  }
+
+  .single {
+    padding-top: 14px;
+    .popup__btn {
+      height: 21px;
+      display: flex;
+      justify-content: center;
+    }
   }
 }
 
@@ -335,24 +369,16 @@ const onConfirmBirthday = () => {
 :deep(.birthday-popup-wrapper.van-popup) {
   width: calc(100% - 1rem);
   margin: 0 0.5rem 0.5rem;
-  border-radius: 20px;
+  border-radius: var(--common-br-ra);
 }
 
-:deep(.birthday-popup .van-date-picker) {
+
+:deep(.van-picker) {
   background: transparent;
 }
 
 :deep(.birthday-popup .van-picker__mask) {
-  background-image: linear-gradient(
-      180deg,
-      rgba(255, 255, 255, 0.9),
-      rgba(255, 255, 255, 0)
-    ),
-    linear-gradient(
-      0deg,
-      rgba(255, 255, 255, 0.9),
-      rgba(255, 255, 255, 0)
-    );
+  background: transparent;
 }
 
 :deep(.birthday-popup .van-picker__columns) {
@@ -361,18 +387,30 @@ const onConfirmBirthday = () => {
 
 :deep(.birthday-popup .van-picker__selected) {
   font-weight: 600;
-  color: #2f7bff;
+  color: var(--common-primary);
+  background: transparent;
 }
 
 :deep(.birthday-popup .van-picker-column__item--selected) {
-  color: #2f7bff;
+  color: var(--common-primary);
   font-weight: 600;
+  background: transparent;
 }
 
 :deep(.birthday-popup .van-picker__frame) {
-  border-radius: 14px;
-  border: 1px solid #e0e0e0;
+  border-radius: var(--common-br-ra);
+  border: 1px solid var(--common-br-b-c);
   left: 0;
   right: 0;
+}
+
+:deep(.van-cell) {
+  background-color: var(--common-bg-card);
+  &::after {
+    border-bottom: 1px solid var(--common-text-color);
+    left: 0;
+    right: 0;
+  }
+  
 }
 </style>
